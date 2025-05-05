@@ -3,7 +3,7 @@ import ProductCard from "./components/productCard/productCard";
 
 function App() {
   return (
-    <main className="w-screen h-screen flex items-center flex-col bg-primary">
+    <main className="w-screen h-screen flex font-mono items-center flex-col bg-primary">
         <Header />
         <ProductCard
           id="2"

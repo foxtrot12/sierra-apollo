@@ -1,7 +1,26 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "Tangerine";
+  src: url("./fonts/Tangerine-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "mono";
+  src: url("./fonts/RobotoMono-VariableFont_wght.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @theme {
   --color-primary: #2b3638;
   --color-secondary: #fff9f9;
   --color-accent: #2fa8d8;
+  --font-cursive: "Tangerine", cursive;
+  --font-mono: "mono", monospace;
 }
+

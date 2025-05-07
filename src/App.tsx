@@ -1,17 +1,18 @@
 import Header from "./components/header";
+import ProductCard from "./components/productCard/productCard";
 import ProductCardCarousel from "./components/productCardCarousel";
 
 const products = [
-  {
-    id: 1,
-    name: "floral print v-neck top",
-    brand: "shaye",
-    price: 2986,
-    originalPrice: 4977,
-    discountPercentage: 40,
-    imageUrl:
-      "https://assets.ajio.com/medias/sys_master/root/20240209/UUe4/65c6542805ac7d77bb4c05c5/-473Wx593H-467057476-peach-MODEL.jpg",
-  },
+  // {
+  //   id: 1,
+  //   name: "floral print v-neck top",
+  //   brand: "shaye",
+  //   price: 2986,
+  //   originalPrice: 4977,
+  //   discountPercentage: 40,
+  //   imageUrl:
+  //     "https://assets.ajio.com/medias/sys_master/root/20240209/UUe4/65c6542805ac7d77bb4c05c5/-473Wx593H-467057476-peach-MODEL.jpg",
+  // },
   {
     id: 2,
     name: "morgan blouse",

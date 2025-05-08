@@ -3,5 +3,7 @@
   "off": "off",
   "save": "save",
   "cart": "cart",
-  "pass": "pass"
+  "pass": "pass",
+  "productsEndMessage": "thats the end of this shopping binge, click the button to start over",
+  "startOver": "start over"
 }

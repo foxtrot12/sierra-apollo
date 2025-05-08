@@ -1,143 +1,191 @@
 import React, { memo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import TextCase from "../textCase";
-import ProductCard, { ProductCardParams } from "./productCard";
+import ProductCard, { Product } from "./productCard";
 
 export type SwipeDirection = "left" | "right" | "up";
 
-export interface SwipableProductCardParams extends ProductCardParams {
-  /** Threshold (px) before onSwipeBegin fires once */
-  swipingThreshold: number;
-  /** Threshold (px) before onSwipe fires on pointer up */
-  swipeThreshold: number;
-  /** Called once, when first threshold is crossed */
-  onSwipeBegin?: (direction: SwipeDirection) => void;
-  /** Called once, on pointer up, if a swipeThreshold direction was exceeded */
-  onSwipe?: (direction: SwipeDirection) => void;
+export interface SwipeableProductCardProps extends Product {
+  /** Distance (px) before swipe start is recognized */
+  swipeStartThreshold: number;
+  /** Distance (px) before swipe completion is recognized */
+  swipeReleaseThreshold: number;
+  /** Called once when the swipe start threshold is crossed */
+  onSwipeStart?: (direction: SwipeDirection) => void;
+  /** Called once when the swipe release threshold is exceeded */
+  onSwipeComplete?: (direction: SwipeDirection) => void;
 }
 
-function SwipableProductCard({
-  swipingThreshold,
-  swipeThreshold,
-  onSwipeBegin,
-  onSwipe,
-  ...productCardProps
-}: SwipableProductCardParams) {
+function SwipeableProductCard({
+  swipeStartThreshold,
+  swipeReleaseThreshold,
+  onSwipeStart,
+  onSwipeComplete,
+  ...cardProps
+}: SwipeableProductCardProps) {
   const { t } = useTranslation();
-  const startPos = useRef<{ x: number; y: number } | null>(null);
-  const [offset, setOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
-  const [direction, setDirection] = useState<SwipeDirection | null>(null);
-  const isDragging = useRef(false);
-  const hasSwipeBegin = useRef(false);
-  const hasCommitted = useRef(false);
 
-  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (hasCommitted.current) return;
-    startPos.current = { x: e.clientX, y: e.clientY };
-    isDragging.current = true;
-    hasSwipeBegin.current = false;
-    e.currentTarget.setPointerCapture(e.pointerId);
-  };
+  const initialPointerPos = useRef<{ x: number; y: number } | null>(null);
+  const [translation, setTranslation] = useState({ x: 0, y: 0 });
+  const [currentDirection, setCurrentDirection] =
+    useState<SwipeDirection | null>(null);
 
-  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!isDragging.current || !startPos.current || hasCommitted.current) return;
-    const dx = e.clientX - startPos.current.x;
-    const dy = e.clientY - startPos.current.y;
-    setOffset({ x: dx, y: dy });
+  const isPointerDown = useRef(false);
+  const hasStartedSwipe = useRef(false);
+  const hasCommittedSwipe = useRef(false);
 
-    // determine live direction
-    let liveDir: SwipeDirection | null = null;
-    if (Math.abs(dx) > Math.abs(dy) && dx > swipingThreshold) liveDir = "right";
-    else if (Math.abs(dx) > Math.abs(dy) && dx < -swipingThreshold) liveDir = "left";
-    else if (Math.abs(dy) > Math.abs(dx) && dy < -swipingThreshold) liveDir = "up";
-    setDirection(liveDir);
+  const detectCommitDirection = (): SwipeDirection | null => {
+    const { x, y } = translation;
+    const absX = Math.abs(x);
+    const absY = Math.abs(y);
 
-    // fire onSwipeBegin once
-    if (liveDir && !hasSwipeBegin.current) {
-      hasSwipeBegin.current = true;
-      onSwipeBegin?.(liveDir);
+    if (absX > absY && absX > swipeReleaseThreshold) {
+      return x > 0 ? "right" : "left";
     }
+    if (absY > absX && absY > swipeReleaseThreshold && y < 0) {
+      return "up";
+    }
+    return null;
   };
 
-  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!isDragging.current) return;
-    const { x, y } = offset;
-    let commitDir: SwipeDirection | null = null;
-    if (Math.abs(x) > Math.abs(y) && x > swipeThreshold) commitDir = "right";
-    else if (Math.abs(x) > Math.abs(y) && x < -swipeThreshold) commitDir = "left";
-    else if (Math.abs(y) > Math.abs(x) && y < -swipeThreshold) commitDir = "up";
+  const commitSwipe = (
+    event: React.PointerEvent<HTMLDivElement>,
+    direction: SwipeDirection
+  ) => {
+    hasCommittedSwipe.current = true;
+    onSwipeComplete?.(direction);
 
-    if (commitDir) {
-      // commit swipe: let card fly off
-      hasCommitted.current = true;
-      onSwipe?.(commitDir);
-      // calculate offscreen offset
-      const multiplier = 3;
-      if (commitDir === "right" || commitDir === "left") {
-        setOffset({ x: offset.x * multiplier, y: offset.y });
-      } else if (commitDir === "up") {
-        setOffset({ x: offset.x, y: offset.y * multiplier });
-      }
-      isDragging.current = false;
-      e.currentTarget.releasePointerCapture(e.pointerId);
+    const multiplier = 3;
+    const flyX =
+      direction === "left" || direction === "right"
+        ? translation.x * multiplier
+        : translation.x;
+    const flyY =
+      direction === "up" ? translation.y * multiplier : translation.y;
+
+    setTranslation({ x: flyX, y: flyY });
+    isPointerDown.current = false;
+    event.currentTarget.releasePointerCapture(event.pointerId);
+  };
+
+  const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (hasCommittedSwipe.current) return;
+
+    initialPointerPos.current = { x: event.clientX, y: event.clientY };
+    isPointerDown.current = true;
+    hasStartedSwipe.current = false;
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
+  const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (
+      !isPointerDown.current ||
+      !initialPointerPos.current ||
+      hasCommittedSwipe.current
+    )
       return;
+
+    const dx = event.clientX - initialPointerPos.current.x;
+    const dy = event.clientY - initialPointerPos.current.y;
+    setTranslation({ x: dx, y: dy });
+
+    const absDx = Math.abs(dx);
+    const absDy = Math.abs(dy);
+    let liveDirection: SwipeDirection | null = null;
+
+    if (absDx > absDy && absDx > swipeStartThreshold) {
+      liveDirection = dx > 0 ? "right" : "left";
+    } else if (absDy > absDx && dy < -swipeStartThreshold) {
+      liveDirection = "up";
     }
 
-    // revert if not committed
-    setOffset({ x: 0, y: 0 });
-    setDirection(null);
-    startPos.current = null;
-    isDragging.current = false;
-    hasSwipeBegin.current = false;
-    e.currentTarget.releasePointerCapture(e.pointerId);
+    setCurrentDirection(liveDirection);
+
+    if (liveDirection && !hasStartedSwipe.current) {
+      hasStartedSwipe.current = true;
+      onSwipeStart?.(liveDirection);
+    }
+
+    const commitDir = detectCommitDirection();
+    if (commitDir) {
+      commitSwipe(event, commitDir);
+    }
   };
 
-  // compute rotation
-  const rawRotate = (offset.x / swipingThreshold) * 15;
-  const rotate = Math.max(Math.min(rawRotate, 15), -15);
+  const handlePointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (!isPointerDown.current) return;
+
+    // Reset if swipe hasn't committed
+    setTranslation({ x: 0, y: 0 });
+    setCurrentDirection(null);
+    initialPointerPos.current = null;
+    isPointerDown.current = false;
+    hasStartedSwipe.current = false;
+    event.currentTarget.releasePointerCapture(event.pointerId);
+  };
+
+  // rotation based on horizontal displacement
+  const rawRotation = (translation.x / swipeStartThreshold) * 15;
+  const rotationAngle = Math.max(-15, Math.min(15, rawRotation));
+
+  // determine transition classes
+  const isFlyingAway = hasCommittedSwipe.current;
+  const transitionClass = isPointerDown.current
+    ? "transition-none cursor-grabbing"
+    : isFlyingAway
+    ? "transition-transform duration-500 ease-out pointer-events-none"
+    : "transition-transform duration-300 ease cursor-grab";
 
   return (
     <div
       className={`
-        flex w-full h-full touch-none transform origin-bottom
-        ${hasCommitted.current ? "pointer-events-none" : isDragging.current ? "transition-none cursor-grabbing" : "transition-transform duration-300 ease cursor-grab"}
+        relative flex w-full h-full touch-none transform origin-bottom
+        ${transitionClass}
       `}
-      style={{ transform: `translate(${offset.x}px, ${offset.y}px) rotate(${rotate}deg)` }}
+      style={{
+        transform: `translate(${translation.x}px, ${translation.y}px) rotate(${rotationAngle}deg)`,
+      }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
     >
-      <ProductCard {...productCardProps} />
+      <ProductCard {...cardProps} />
 
-      <div className="flex items-center px-5 text-primary font-cursive font-extrabold text-6xl justify-between absolute h-full w-full">
+      <div className="absolute inset-0 flex items-center justify-between px-5 text-accent font-cursive font-extrabold text-6xl">
         <div
-          className={`bg-secondary p-1.5 rounded-2xl transition-opacity duration-350  ${
-            direction === "right" ? "opacity-100" : "opacity-0 pointer-events-none"
+          className={`bg-secondary border-primary border-2 p-1.5 rounded-2xl transition-opacity duration-100  ${
+            currentDirection === "right"
+              ? "opacity-100"
+              : "opacity-0 pointer-events-none"
           }`}
         >
-          <TextCase mode={"capitalize"}>{t("save")}</TextCase>
+          <TextCase mode="capitalize">{t("save")}</TextCase>
         </div>
 
-        <div className="h-full pt-2 flex items-end pb-20">
+        <div className="flex items-end h-full pt-2 pb-20">
           <div
-            className={`h-fit text-center bg-secondary p-1.5 rounded-2xl transition-opacity duration-350  ${
-              direction === "up" ? "opacity-100" : "opacity-0 pointer-events-none"
+            className={`h-fit text-center bg-secondary border-primary border-2 p-1.5 rounded-2xl transition-opacity duration-100  ${
+              currentDirection === "up"
+                ? "opacity-100"
+                : "opacity-0 pointer-events-none"
             }`}
           >
-            <TextCase mode={"capitalize"}>{t("cart")}</TextCase>
+            <TextCase mode="capitalize">{t("cart")}</TextCase>
           </div>
         </div>
 
         <div
-          className={`h-fit bg-secondary p-1.5 rounded-2xl transition-opacity duration-350  ${
-            direction === "left" ? "opacity-100" : "opacity-0 pointer-events-none"
+          className={`h-fit bg-secondary border-primary border-2 p-1.5 rounded-2xl transition-opacity duration-100  ${
+            currentDirection === "left"
+              ? "opacity-100"
+              : "opacity-0 pointer-events-none"
           }`}
         >
-          <TextCase mode={"capitalize"}>{t("pass")}</TextCase>
+          <TextCase mode="capitalize">{t("pass")}</TextCase>
         </div>
       </div>
     </div>
   );
 }
 
-export default memo(SwipableProductCard);
+export default memo(SwipeableProductCard);

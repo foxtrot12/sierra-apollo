@@ -6,11 +6,11 @@ interface ProductContextType {
   passedProducts: Product[];
   cartProducts: Product[];
   addSavedProduct: (product: Product) => void;
-  removeSavedProduct: (id: string) => void;
+  removeSavedProduct: (id: string | number) => void;
   addPassedProduct: (product: Product) => void;
-  removePassedProduct: (id: string) => void;
+  removePassedProduct: (id: string | number) => void;
   addCartProduct: (product: Product) => void;
-  removeCartProduct: (id: string) => void;
+  removeCartProduct: (id: string | number) => void;
   clearCart: () => void;
 }
 
@@ -21,29 +21,52 @@ export function ProductProvider({ children }: { children: ReactNode }) {
   const [passedProducts, setPassedProducts] = useState<Product[]>([]);
   const [cartProducts, setCartProducts] = useState<Product[]>([]);
 
+  const removeSavedProduct = (id: string | number) =>
+    setSavedProducts((prev) => {
+      if (!prev.some((p) => p.id === id)) return prev;
+      return prev.filter((p) => p.id !== id);
+    });
+
+  const removePassedProduct = (id: string | number) =>
+    setPassedProducts((prev) => {
+      if (!prev.some((p) => p.id === id)) return prev;
+      return prev.filter((p) => p.id !== id);
+    });
+
+  const removeCartProduct = (id: string | number) =>
+    setCartProducts((prev) => {
+      if (!prev.some((p) => p.id === id)) return prev;
+      return prev.filter((p) => p.id !== id);
+    });
+
   const addSavedProduct = (product: Product) => {
-    setSavedProducts((prev) => [...prev, product]);
-  };
-  const removeSavedProduct = (id: string) => {
-    setSavedProducts((prev) => prev.filter((p) => p.id !== id));
+    removePassedProduct(product.id);
+    removeCartProduct(product.id);
+
+    setSavedProducts((prev) =>
+      prev.some((p) => p.id === product.id) ? prev : [...prev, product]
+    );
   };
 
   const addPassedProduct = (product: Product) => {
-    setPassedProducts((prev) => [...prev, product]);
-  };
-  const removePassedProduct = (id: string) => {
-    setPassedProducts((prev) => prev.filter((p) => p.id !== id));
+    removeSavedProduct(product.id);
+    removeCartProduct(product.id);
+
+    setPassedProducts((prev) =>
+      prev.some((p) => p.id === product.id) ? prev : [...prev, product]
+    );
   };
 
   const addCartProduct = (product: Product) => {
-    setCartProducts((prev) => [...prev, product]);
+    removeSavedProduct(product.id);
+    removePassedProduct(product.id);
+
+    setCartProducts((prev) =>
+      prev.some((p) => p.id === product.id) ? prev : [...prev, product]
+    );
   };
-  const removeCartProduct = (id: string) => {
-    setCartProducts((prev) => prev.filter((p) => p.id !== id));
-  };
-  const clearCart = () => {
-    setCartProducts([]);
-  };
+
+  const clearCart = () => setCartProducts([]);
 
   return (
     <ProductContext.Provider

@@ -4,7 +4,7 @@ import { NavLink } from "react-router-dom";
 
 function Header() {
   return (
-    <nav
+    <header
       className="flex w-full h-12 justify-between px-2 
     border-b-2 border-accent"
     >
@@ -14,7 +14,7 @@ function Header() {
         <ShoppingCart className="text-secondary h-full" />
         </NavLink>
       </button>
-    </nav>
+    </header>
   );
 }
 

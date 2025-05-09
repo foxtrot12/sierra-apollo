@@ -7,9 +7,10 @@ import Cart from "./components/cart/cart";
 import { RoutesList } from "./routes";
 
 function App() {
+
   return (
     <ProductProvider>
-      <main className="w-screen h-screen flex font-mono items-center flex-col bg-primary">
+      <main className="w-full h-full flex font-mono items-center flex-col bg-primary">
         <BrowserRouter>
           <Header />
           <Routes>

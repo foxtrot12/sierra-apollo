@@ -23,3 +23,11 @@
   --font-cursive: "Tangerine", cursive;
   --font-mono: "mono", monospace;
 }
+
+body {
+  margin-top: env(safe-area-inset-top);
+  height: calc(100vh - env(safe-area-inset-top));
+  width: 100vw;
+  display: flex;
+  background-color: var(--color-primary);
+}

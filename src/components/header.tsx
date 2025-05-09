@@ -1,5 +1,6 @@
-import { ShoppingCartIcon } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 import { memo } from "react";
+import { NavLink } from "react-router-dom";
 
 function Header() {
   return (
@@ -9,7 +10,9 @@ function Header() {
     >
       <img alt="Sierra Apollo" src="/logoLandscape.png"></img>
       <button className="bg-none border-none cursor-pointer">
-        <ShoppingCartIcon className="text-secondary h-full" />
+        <NavLink to={"/cart"} className="border-none bg-none">
+        <ShoppingCart className="text-secondary h-full" />
+        </NavLink>
       </button>
     </nav>
   );

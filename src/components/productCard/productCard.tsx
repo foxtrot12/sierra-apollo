@@ -23,7 +23,7 @@ function ProductCard({
     <div className="flex w-full h-full flex-col relative pt-1">
       <img
         src={imageUrl}
-        className="h-full border-transparent border-2 rounded-2xl"
+        className="h-full border-transparent border-2 object-cover rounded-2xl"
       />
       <div>
         <div

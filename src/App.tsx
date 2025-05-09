@@ -29,7 +29,10 @@ function App() {
 
   return (
     <ProductProvider>
-      <main className="w-full h-full flex font-mono items-center flex-col bg-primary">
+      <main
+        className="w-full md:justify-self-center md:landscape:max-w-md 
+      h-full flex font-mono items-center flex-col bg-primary"
+      >
         <Header />
         <Routes>
           <Route

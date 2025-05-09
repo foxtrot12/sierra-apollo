@@ -1,4 +1,4 @@
-import { FC, memo, useMemo } from "react";
+import { memo, useMemo } from "react";
 
 type TextCaseMode = "upper" | "lower" | "sentence" | "capitalize";
 

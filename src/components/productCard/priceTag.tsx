@@ -7,20 +7,33 @@ export interface PriceTagParams {
   discountPercentage: number;
 }
 
-function PriceTag(props: PriceTagParams) {
+function PriceTag({
+  discountPercentage,
+  originalPrice,
+  price,
+}: PriceTagParams) {
   const { t } = useTranslation();
+  const isDiscounted = discountPercentage !== 0;
   return (
     <div className="flex flex-col h-full w-full">
-      <div
-        className="flex bg-accent py-4 font-bold text-secondary 
+      {isDiscounted && (
+        <div
+          className="flex bg-accent py-4 font-bold text-secondary 
       justify-center rounded-t-lg"
-      >{`${props.discountPercentage}% ${t("off")}`}</div>
-      <div className="flex bg-primary flex-col p-2.5 items-center rounded-b-2xl">
-        <div className="text-secondary justify-center opacity-85 text-lg line-through">
-          ₹{props.originalPrice}
-        </div>
+        >{`${discountPercentage}% ${t("off")}`}</div>
+      )}
+      <div
+        className={`flex bg-primary flex-col p-2.5 items-center ${
+          isDiscounted ? "rounded-b-2xl" : "rounded-2xl"
+        }`}
+      >
+        {isDiscounted && (
+          <div className="text-secondary justify-center opacity-85 text-lg line-through">
+            ₹{originalPrice}
+          </div>
+        )}
         <div className="text-secondary justify-center font-bold text-xl">
-          ₹{props.price}
+          ₹{price}
         </div>
       </div>
     </div>

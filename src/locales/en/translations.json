@@ -3,5 +3,14 @@
   "off": "off",
   "save": "save",
   "cart": "cart",
-  "pass": "pass"
+  "shoppingCart": "shopping cart",
+  "savedForLater": "saved for later",
+  "remove": "remove",
+  "total": "total",
+  "pass": "pass",
+  "productsEndMessage": "thats the end of this shopping binge, click the button to start over",
+  "startOver": "start over",
+  "yourCartIsEmpty": "your cart is empty",
+  "goBack":"go back"
+  
 }

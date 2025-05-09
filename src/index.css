@@ -17,9 +17,9 @@
 }
 
 @theme {
-  --color-primary: #2b3638;
-  --color-secondary: #fff9f9;
-  --color-accent: #2fa8d8;
+  --color-primary: #313b3e;
+  --color-secondary: #d5ebdb;
+  --color-accent: #58afa5;
   --font-cursive: "Tangerine", cursive;
   --font-mono: "mono", monospace;
 }

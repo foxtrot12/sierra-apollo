@@ -28,7 +28,7 @@ function ProductCard({
       <div>
         <div
           className="flex flex-col w-full absolute bottom-0 
-          px-2 pb-2 pt-6 font-bold bg-gradient-to-t from-primary
+          px-2 py-6 font-bold bg-gradient-to-t from-primary
            to-transparent"
         >
           <div className="flex justify-between"></div>
@@ -41,7 +41,9 @@ function ProductCard({
               <span className="text-accent -translate-x-5">
                 <TextCase mode={"capitalize"}>{t("by")}</TextCase>
               </span>
-              <TextCase mode={"capitalize"}>{brand}</TextCase>
+              <span className="font-cursive text-4xl">
+                <TextCase mode={"capitalize"}>{brand}</TextCase>
+              </span>
             </div>
           </div>
         </div>
